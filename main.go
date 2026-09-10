@@ -41,7 +41,7 @@ func main() {
 	flag.IntVar(&cfg.Requests, "requests", 100, "requests per endpoint, per pass")
 	flag.IntVar(&cfg.Concurrency, "concurrency", 10, "parallel requests in the concurrent pass")
 	flag.IntVar(&cfg.Warmup, "warmup", 20, "discarded warmup requests per endpoint")
-	flag.StringVar(&cfg.Only, "only", "", "run a single backend by name (golang, nodejs, php, python)")
+	flag.StringVar(&cfg.Only, "only", "", "run a single backend by name (golang, nodejs, laravel, symfony, python)")
 	flag.StringVar(&cfg.Profile, "profile", "both", "which stack to measure: dev, prod, or both")
 	flag.BoolVar(&cfg.SkipBuild, "skip-build", false, "skip docker compose --build, reuse the existing image")
 	flag.StringVar(&cfg.OutDir, "out", ".", "directory to write the Markdown reports into")

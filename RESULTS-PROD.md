@@ -1,6 +1,6 @@
 # Velo-stats backend speed test - production stack
 
-Generated 2026-09-10 11:15:41 CEST on darwin/arm64, 12 CPUs with Docker version 29.7.2, build a7dcaa6.
+Generated 2026-09-10 13:26:04 CEST on darwin/arm64, 12 CPUs with Docker version 29.7.2, build a7dcaa6.
 
 Each backend was started on its own, warmed up, measured, then torn down before
 the next one started. No two backends ran at the same time.
@@ -25,31 +25,31 @@ requests per second. Fastest first.
 
 | # | Backend | Stack | Setup | Median latency | Throughput (req/s) | Errors |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | golang | Go 1.25 | net/http, baked-in SQLite, GOMAXPROCS=4 | 0.52 ms | 27056.4 | 0 |
-| 2 | nodejs | NestJS 11 / Node 22 | 4 clustered Node processes, baked-in SQLite | 0.80 ms | 24713.7 | 0 |
-| 3 | symfony | Symfony 8.1 / PHP 8.5 | nginx to a 4-worker PHP-FPM pool, OPcache with JIT | 1.18 ms | 16503.2 | 0 |
-| 4 | python | Django 6 / gunicorn | gunicorn, 4 preloaded workers, baked-in SQLite | 1.47 ms | 17175.2 | 0 |
-| 5 | php | Laravel 13 / PHP 8.4 | nginx to a 4-worker PHP-FPM pool, OPcache with JIT | 3.93 ms | 7857.7 | 0 |
+| 1 | golang | Go 1.25 | net/http, baked-in SQLite, GOMAXPROCS=4 | 0.56 ms | 23656.5 | 0 |
+| 2 | nodejs | NestJS 11 / Node 22 | 4 clustered Node processes, baked-in SQLite | 0.84 ms | 20964.2 | 0 |
+| 3 | symfony | Symfony 8.1 / PHP 8.5 | nginx to a 4-worker PHP-FPM pool, OPcache with JIT | 1.12 ms | 16780.6 | 0 |
+| 4 | python | Django 6 / gunicorn | gunicorn, 4 preloaded workers, baked-in SQLite | 1.39 ms | 19276.0 | 0 |
+| 5 | laravel | Laravel 13 / PHP 8.5 | nginx to a 4-worker PHP-FPM pool, OPcache with JIT | 4.44 ms | 7018.5 | 0 |
 
 ## Median latency per endpoint (sequential)
 
-| Endpoint | golang | nodejs | php | symfony | python |
+| Endpoint | golang | nodejs | laravel | symfony | python |
 | --- | --- | --- | --- | --- | --- |
-| `/_healthcheck` | 0.24 ms | 0.33 ms | 1.14 ms | 0.59 ms | 0.57 ms |
-| `/rides` | 3.07 ms | 3.87 ms | 15.38 ms | 5.75 ms | 5.97 ms |
-| `/rides/summary` | 0.52 ms | 0.39 ms | 1.57 ms | 1.00 ms | 1.83 ms |
-| `/rides/cost` | 0.48 ms | 0.80 ms | 9.65 ms | 1.18 ms | 1.14 ms |
-| `/stations` | 1.09 ms | 1.67 ms | 3.93 ms | 2.52 ms | 1.47 ms |
+| `/_healthcheck` | 0.28 ms | 0.35 ms | 1.28 ms | 0.62 ms | 0.61 ms |
+| `/rides` | 3.27 ms | 4.42 ms | 16.12 ms | 5.78 ms | 5.87 ms |
+| `/rides/summary` | 0.56 ms | 0.43 ms | 1.78 ms | 0.97 ms | 1.70 ms |
+| `/rides/cost` | 0.46 ms | 0.84 ms | 10.69 ms | 1.12 ms | 1.14 ms |
+| `/stations` | 1.11 ms | 1.68 ms | 4.44 ms | 2.52 ms | 1.39 ms |
 
 ## Throughput per endpoint (concurrent, req/s)
 
-| Endpoint | golang | nodejs | php | symfony | python |
+| Endpoint | golang | nodejs | laravel | symfony | python |
 | --- | --- | --- | --- | --- | --- |
-| `/_healthcheck` | 18894.2 | 8164.3 | 3662.3 | 6784.2 | 7348.2 |
-| `/rides` | 470.9 | 548.0 | 251.4 | 615.3 | 715.9 |
-| `/rides/summary` | 2712.8 | 10092.6 | 2596.6 | 4029.1 | 2408.7 |
-| `/rides/cost` | 3704.0 | 3741.6 | 392.0 | 3561.0 | 3678.6 |
-| `/stations` | 1274.5 | 2167.2 | 955.4 | 1513.5 | 3023.8 |
+| `/_healthcheck` | 15240.6 | 6288.2 | 3473.7 | 6854.9 | 7496.3 |
+| `/rides` | 491.4 | 431.9 | 229.6 | 657.4 | 707.4 |
+| `/rides/summary` | 2968.6 | 7852.1 | 2252.6 | 4151.4 | 2869.7 |
+| `/rides/cost` | 3638.1 | 4216.3 | 347.2 | 3583.6 | 4311.3 |
+| `/stations` | 1317.8 | 2175.8 | 715.4 | 1533.3 | 3891.3 |
 
 ## Detail per backend
 
@@ -59,11 +59,11 @@ net/http, baked-in SQLite, GOMAXPROCS=4 (`docker-compose.prod.yml`, service `app
 
 | Endpoint | Status | Body | Min | Median | p95 | p99 | Max | Errors | Concurrent req/s |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 0.16 ms | 0.24 ms | 0.33 ms | 0.61 ms | 0.61 ms | 0 | 18894.2 |
-| `http://127.0.0.1:8000/rides` | 200 | 125.2 KB | 2.75 ms | 3.07 ms | 3.57 ms | 3.91 ms | 3.91 ms | 0 | 470.9 |
-| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 0.46 ms | 0.52 ms | 0.61 ms | 0.68 ms | 0.68 ms | 0 | 2712.8 |
-| `http://127.0.0.1:8000/rides/cost` | 200 | 341 B | 0.41 ms | 0.48 ms | 0.61 ms | 0.90 ms | 0.90 ms | 0 | 3704.0 |
-| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 0.99 ms | 1.09 ms | 1.39 ms | 1.49 ms | 1.49 ms | 0 | 1274.5 |
+| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 0.19 ms | 0.28 ms | 0.54 ms | 0.95 ms | 0.95 ms | 0 | 15240.6 |
+| `http://127.0.0.1:8000/rides` | 200 | 125.2 KB | 2.88 ms | 3.27 ms | 3.72 ms | 4.17 ms | 4.17 ms | 0 | 491.4 |
+| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 0.50 ms | 0.56 ms | 0.63 ms | 0.65 ms | 0.65 ms | 0 | 2968.6 |
+| `http://127.0.0.1:8000/rides/cost` | 200 | 341 B | 0.41 ms | 0.46 ms | 0.57 ms | 0.81 ms | 0.81 ms | 0 | 3638.1 |
+| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 0.99 ms | 1.11 ms | 1.38 ms | 1.74 ms | 1.74 ms | 0 | 1317.8 |
 
 ### nodejs - NestJS 11 / Node 22
 
@@ -71,23 +71,23 @@ net/http, baked-in SQLite, GOMAXPROCS=4 (`docker-compose.prod.yml`, service `app
 
 | Endpoint | Status | Body | Min | Median | p95 | p99 | Max | Errors | Concurrent req/s |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 0.29 ms | 0.33 ms | 0.40 ms | 0.75 ms | 0.75 ms | 0 | 8164.3 |
-| `http://127.0.0.1:8000/rides` | 200 | 123.0 KB | 3.63 ms | 3.87 ms | 4.31 ms | 4.46 ms | 4.46 ms | 0 | 548.0 |
-| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 0.34 ms | 0.39 ms | 0.45 ms | 0.59 ms | 0.59 ms | 0 | 10092.6 |
-| `http://127.0.0.1:8000/rides/cost` | 200 | 335 B | 0.73 ms | 0.80 ms | 0.96 ms | 1.33 ms | 1.33 ms | 0 | 3741.6 |
-| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 1.54 ms | 1.67 ms | 1.87 ms | 2.14 ms | 2.14 ms | 0 | 2167.2 |
+| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 0.28 ms | 0.35 ms | 0.48 ms | 2.88 ms | 2.88 ms | 0 | 6288.2 |
+| `http://127.0.0.1:8000/rides` | 200 | 123.0 KB | 3.69 ms | 4.42 ms | 6.05 ms | 8.38 ms | 8.38 ms | 0 | 431.9 |
+| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 0.38 ms | 0.43 ms | 0.52 ms | 0.57 ms | 0.57 ms | 0 | 7852.1 |
+| `http://127.0.0.1:8000/rides/cost` | 200 | 335 B | 0.73 ms | 0.84 ms | 1.13 ms | 1.52 ms | 1.52 ms | 0 | 4216.3 |
+| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 1.50 ms | 1.68 ms | 1.90 ms | 6.09 ms | 6.09 ms | 0 | 2175.8 |
 
-### php - Laravel 13 / PHP 8.4
+### laravel - Laravel 13 / PHP 8.5
 
 nginx to a 4-worker PHP-FPM pool, OPcache with JIT (`docker-compose.prod.yml`, service `web`)
 
 | Endpoint | Status | Body | Min | Median | p95 | p99 | Max | Errors | Concurrent req/s |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 1.02 ms | 1.14 ms | 1.54 ms | 2.37 ms | 2.37 ms | 0 | 3662.3 |
-| `http://127.0.0.1:8000/rides` | 200 | 125.2 KB | 14.66 ms | 15.38 ms | 18.24 ms | 19.17 ms | 19.17 ms | 0 | 251.4 |
-| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 1.44 ms | 1.57 ms | 1.76 ms | 2.33 ms | 2.33 ms | 0 | 2596.6 |
-| `http://127.0.0.1:8000/rides/cost` | 200 | 341 B | 9.28 ms | 9.65 ms | 12.25 ms | 15.71 ms | 15.71 ms | 0 | 392.0 |
-| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 3.77 ms | 3.93 ms | 4.10 ms | 4.71 ms | 4.71 ms | 0 | 955.4 |
+| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 1.05 ms | 1.28 ms | 1.68 ms | 2.29 ms | 2.29 ms | 0 | 3473.7 |
+| `http://127.0.0.1:8000/rides` | 200 | 125.2 KB | 15.48 ms | 16.12 ms | 17.25 ms | 19.11 ms | 19.11 ms | 0 | 229.6 |
+| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 1.58 ms | 1.78 ms | 2.38 ms | 2.87 ms | 2.87 ms | 0 | 2252.6 |
+| `http://127.0.0.1:8000/rides/cost` | 200 | 341 B | 9.90 ms | 10.69 ms | 16.71 ms | 22.02 ms | 22.02 ms | 0 | 347.2 |
+| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 3.96 ms | 4.44 ms | 5.67 ms | 6.74 ms | 6.74 ms | 0 | 715.4 |
 
 ### symfony - Symfony 8.1 / PHP 8.5
 
@@ -95,11 +95,11 @@ nginx to a 4-worker PHP-FPM pool, OPcache with JIT (`docker-compose.prod.yml`, s
 
 | Endpoint | Status | Body | Min | Median | p95 | p99 | Max | Errors | Concurrent req/s |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 0.54 ms | 0.59 ms | 0.75 ms | 1.06 ms | 1.06 ms | 0 | 6784.2 |
-| `http://127.0.0.1:8000/rides` | 200 | 125.2 KB | 5.34 ms | 5.75 ms | 6.25 ms | 6.87 ms | 6.87 ms | 0 | 615.3 |
-| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 0.92 ms | 1.00 ms | 1.14 ms | 1.36 ms | 1.36 ms | 0 | 4029.1 |
-| `http://127.0.0.1:8000/rides/cost` | 200 | 341 B | 1.05 ms | 1.18 ms | 1.46 ms | 1.61 ms | 1.61 ms | 0 | 3561.0 |
-| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 2.42 ms | 2.52 ms | 3.96 ms | 4.56 ms | 4.56 ms | 0 | 1513.5 |
+| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 0.54 ms | 0.62 ms | 0.77 ms | 1.06 ms | 1.06 ms | 0 | 6854.9 |
+| `http://127.0.0.1:8000/rides` | 200 | 125.2 KB | 5.38 ms | 5.78 ms | 6.32 ms | 6.92 ms | 6.92 ms | 0 | 657.4 |
+| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 0.90 ms | 0.97 ms | 1.06 ms | 1.27 ms | 1.27 ms | 0 | 4151.4 |
+| `http://127.0.0.1:8000/rides/cost` | 200 | 341 B | 1.03 ms | 1.12 ms | 1.21 ms | 1.44 ms | 1.44 ms | 0 | 3583.6 |
+| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 2.38 ms | 2.52 ms | 2.61 ms | 3.14 ms | 3.14 ms | 0 | 1533.3 |
 
 ### python - Django 6 / gunicorn
 
@@ -107,11 +107,11 @@ gunicorn, 4 preloaded workers, baked-in SQLite (`docker-compose.prod.yml`, servi
 
 | Endpoint | Status | Body | Min | Median | p95 | p99 | Max | Errors | Concurrent req/s |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `http://127.0.0.1:8000/_healthcheck` | 200 | 17 B | 0.51 ms | 0.57 ms | 0.69 ms | 0.75 ms | 0.75 ms | 0 | 7348.2 |
-| `http://127.0.0.1:8000/rides/` | 200 | 134.7 KB | 5.44 ms | 5.97 ms | 7.34 ms | 9.98 ms | 9.98 ms | 0 | 715.9 |
-| `http://127.0.0.1:8000/rides/summary` | 200 | 199 B | 1.51 ms | 1.83 ms | 2.77 ms | 2.92 ms | 2.92 ms | 0 | 2408.7 |
-| `http://127.0.0.1:8000/rides/cost` | 200 | 362 B | 0.92 ms | 1.14 ms | 1.42 ms | 1.49 ms | 1.49 ms | 0 | 3678.6 |
-| `http://127.0.0.1:8000/stations/` | 200 | 26.8 KB | 1.22 ms | 1.47 ms | 1.75 ms | 1.84 ms | 1.84 ms | 0 | 3023.8 |
+| `http://127.0.0.1:8000/_healthcheck` | 200 | 17 B | 0.50 ms | 0.61 ms | 0.75 ms | 0.93 ms | 0.93 ms | 0 | 7496.3 |
+| `http://127.0.0.1:8000/rides/` | 200 | 134.7 KB | 5.44 ms | 5.87 ms | 6.92 ms | 7.47 ms | 7.47 ms | 0 | 707.4 |
+| `http://127.0.0.1:8000/rides/summary` | 200 | 199 B | 1.39 ms | 1.70 ms | 1.99 ms | 2.13 ms | 2.13 ms | 0 | 2869.7 |
+| `http://127.0.0.1:8000/rides/cost` | 200 | 362 B | 0.94 ms | 1.14 ms | 1.45 ms | 1.91 ms | 1.91 ms | 0 | 4311.3 |
+| `http://127.0.0.1:8000/stations/` | 200 | 26.8 KB | 1.21 ms | 1.39 ms | 1.66 ms | 1.77 ms | 1.77 ms | 0 | 3891.3 |
 
 ## How to read this, and what it does not say
 

@@ -77,7 +77,7 @@ A full run builds ten images and issues a thousand requests per backend per
 profile, so it takes a while. To iterate quickly, narrow it:
 
 ```bash
-go run . -only php -profile prod -requests 10 -warmup 2 -skip-build
+go run . -only laravel -profile prod -requests 10 -warmup 2 -skip-build
 ```
 
 ## Flags
@@ -87,7 +87,7 @@ go run . -only php -profile prod -requests 10 -warmup 2 -skip-build
 | `-requests` | 100 | Requests per endpoint, in each of the two passes |
 | `-concurrency` | 10 | Parallel requests during the concurrent pass |
 | `-warmup` | 20 | Discarded requests per endpoint before measuring |
-| `-only` | all | Run one backend: `golang`, `nodejs`, `php`, `symfony` or `python` |
+| `-only` | all | Run one backend: `golang`, `nodejs`, `laravel`, `symfony` or `python` |
 | `-profile` | `both` | Which stack to measure: `dev`, `prod` or `both` |
 | `-skip-build` | false | Reuse the existing image instead of `--build` |
 | `-out` | `.` | Directory to write the reports into |

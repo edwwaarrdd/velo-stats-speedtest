@@ -99,8 +99,8 @@ var backends = []Backend{
 		},
 	},
 	{
-		Name:     "php",
-		Language: "Laravel 13 / PHP 8.4",
+		Name:     "laravel",
+		Language: "Laravel 13 / PHP 8.5",
 		Dir:      repoRoot + "/velo-stats-laravel",
 		BaseURL:  "http://127.0.0.1:8000",
 		Dev: Deployment{
