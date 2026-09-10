@@ -88,6 +88,22 @@ var backends = []Backend{
 		},
 	},
 	{
+		Name:     "java",
+		Language: "Spring Boot 4.1 / Java 25",
+		Dir:      repoRoot + "/velo-stats-java",
+		BaseURL:  "http://127.0.0.1:8000",
+		Dev: Deployment{
+			ComposeFile: "docker-compose.yml",
+			Service:     "app",
+			Description: "embedded server, bind-mounted SQLite, all cores",
+		},
+		Prod: Deployment{
+			ComposeFile: "docker-compose.prod.yml",
+			Service:     "app",
+			Description: "embedded server, baked-in SQLite, ActiveProcessorCount=4",
+		},
+	},
+	{
 		Name:     "nodejs",
 		Language: "NestJS 11 / Node 22",
 		Dir:      repoRoot + "/velo-stats-nodejs",

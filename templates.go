@@ -10,6 +10,12 @@ Generated {{ .GeneratedAt }} on {{ .Host }} with {{ .Docker }}.
 
 Each backend was started on its own, warmed up, measured, then torn down before
 the next one started. No two backends ran at the same time.
+
+**Every figure below is based on {{ .Config.Requests }} requests per endpoint,
+in each of two passes.** A further {{ .Config.Warmup }} requests per endpoint
+are issued first and discarded, which is set by the slowest runtime to warm
+rather than the fastest: the JVM needs thousands of calls to finish compiling,
+where the others are at full speed within tens.
 {{ if eq .Profile "prod" }}
 This is the **production** profile: each backend's ` + "`docker-compose.prod.yml`" + `,
 running a real application server with no bind mounts and the already-seeded
@@ -81,8 +87,9 @@ Not measured: {{ .Note }}
   through Docker Desktop's filesystem layer.
 {{ else }}- **Every backend gets four CPUs**, and the single-threaded runtimes are
   configured with four workers to match: a PHP-FPM pool of four, four gunicorn
-  workers, four clustered Node processes, and ` + "`GOMAXPROCS=4`" + ` for Go. Without
-  that cap Go would simply take all twelve cores of the host.
+  workers, four clustered Node processes, ` + "`GOMAXPROCS=4`" + ` for Go and
+  ` + "`-XX:ActiveProcessorCount=4`" + ` for the JVM. Without that cap Go and the JVM
+  would simply take all twelve cores of the host.
 - **Nothing is bind-mounted.** The seeded SQLite database is copied into the
   image at build time, so no request touches the host filesystem.
 - **This is still a single container per backend on a laptop.** It is not a
@@ -91,7 +98,7 @@ Not measured: {{ .Note }}
 {{ end }}
 ## What this measures, and what it does not
 
-A ranking of five backends invites being read as a ranking of five frameworks.
+A ranking of six backends invites being read as a ranking of six frameworks.
 It is not one, and the numbers themselves say so.
 
 Split each backend's latency into the part that does not depend on the data and
@@ -117,12 +124,12 @@ plain strings takes 0.04 ms.
 
 So a backend that hydrates entities and serialises them will lose to one that
 maps arrays, in any language, by a margin that grows with the row count and has
-almost nothing to do with the framework wrapped around it. All five backends
+almost nothing to do with the framework wrapped around it. All six backends
 here hydrate their rows, which is what makes them comparable. Change any one of
 them to map arrays instead and it will jump the ranking, without its framework
 having changed at all.
 
-Read these tables as a comparison of five implementations, then. Not of Go
+Read these tables as a comparison of six implementations, then. Not of Go
 against PHP, and not of one framework against another.
 `
 
