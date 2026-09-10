@@ -16,12 +16,10 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          # The version the module declares, so CI and development agree.
           go-version-file: go.mod
           cache: true
 
       - name: Build
-        # The harness has no test suite, so building is the only other check.
         run: go build ./...
 
       - name: Lint

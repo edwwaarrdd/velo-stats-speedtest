@@ -1,18 +1,10 @@
-// Command speedtest benchmarks the four velo-stats backend implementations
-// against each other and writes Markdown reports.
+// Backends are measured one at a time. They cannot run together anyway, since
+// all four publish port 8000, and running them alone is also the only way to
+// compare them fairly.
 //
-// It runs one backend at a time: bring the containers up, wait for the health
-// check, warm it up, measure every endpoint sequentially and then concurrently,
-// tear it down, move on. They cannot run together anyway, since all four publish
-// port 8000, and running them alone is also the only way to compare them fairly.
-//
-// Each backend can be run in two shapes. The development profile is the
-// docker-compose.yml a contributor uses. The production profile is the
-// docker-compose.prod.yml alongside it: real application servers, no bind
-// mounts, the seeded SQLite database baked into the image, and the same CPU
-// allowance for every backend. Running both answers two questions at once -
-// which backend is fastest, and how much of a backend's development number was
-// the development stack rather than the language.
+// Running both profiles answers two questions at once: which backend is
+// fastest, and how much of a backend's development number was the development
+// stack rather than the language.
 package main
 
 import (
@@ -24,7 +16,6 @@ import (
 	"time"
 )
 
-// Config holds the run's tunables, all settable from the command line.
 type Config struct {
 	Requests    int
 	Concurrency int
@@ -57,7 +48,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// results[profile] holds one entry per backend, in backend order.
 	results := map[string][]Result{}
 	first := true
 
@@ -94,8 +84,6 @@ func main() {
 	logf("\nWrote %s", strings.Join(written, ", "))
 }
 
-// run benchmarks one backend in one profile from a cold start, and always tears
-// it down again.
 func run(b Backend, profile string, cfg Config) Result {
 	d := b.Deployment(profile)
 	logf("\n=== %s / %s (%s) ===", b.Name, profile, d.Description)
@@ -126,7 +114,6 @@ func failure(b Backend, profile string, d Deployment, note string) Result {
 	return Result{Backend: b, Profile: profile, Deployment: d, Failed: true, Note: note}
 }
 
-// reportPath names the report for a profile.
 func reportPath(dir, profile string) string {
 	if profile == ProfileProd {
 		return dir + "/RESULTS-PROD.md"
@@ -134,7 +121,6 @@ func reportPath(dir, profile string) string {
 	return dir + "/RESULTS-DEV.md"
 }
 
-// selectBackends returns every backend, or just the one named by -only.
 func selectBackends(only string) ([]Backend, error) {
 	if only == "" {
 		return backends, nil
@@ -152,8 +138,6 @@ func selectBackends(only string) ([]Backend, error) {
 	return nil, fmt.Errorf("unknown backend %q, expected one of: %s", only, strings.Join(names, ", "))
 }
 
-// selectProfiles turns the -profile flag into the profiles to measure, in the
-// order they are run.
 func selectProfiles(profile string) ([]string, error) {
 	switch profile {
 	case "both":
@@ -165,7 +149,6 @@ func selectProfiles(profile string) ([]string, error) {
 	}
 }
 
-// logf writes progress to stderr, keeping stdout free of harness chatter.
 func logf(format string, args ...any) {
 	fmt.Fprintf(os.Stderr, format+"\n", args...)
 }

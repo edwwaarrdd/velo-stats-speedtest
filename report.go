@@ -10,7 +10,6 @@ import (
 	"time"
 )
 
-// ranking is one row of the summary table: a backend reduced to two numbers.
 type ranking struct {
 	Name          string
 	Language      string
@@ -20,7 +19,6 @@ type ranking struct {
 	Errors        int
 }
 
-// reportData is everything a single-profile report needs.
 type reportData struct {
 	GeneratedAt string
 	Host        string
@@ -34,7 +32,6 @@ type reportData struct {
 	Results   []Result
 }
 
-// writeReport renders one profile's report.
 func writeReport(path string, cfg Config, profile string, results []Result) error {
 	data := reportData{
 		GeneratedAt: time.Now().Format("2006-01-02 15:04:05 MST"),
@@ -50,7 +47,6 @@ func writeReport(path string, cfg Config, profile string, results []Result) erro
 	return render(path, reportTemplate, data)
 }
 
-// comparisonRow puts one backend's two profiles side by side.
 type comparisonRow struct {
 	Name     string
 	Language string
@@ -63,13 +59,12 @@ type comparisonRow struct {
 	DevRPS      float64
 	ProdRPS     float64
 
-	// LatencySpeedup and ThroughputSpeedup are prod relative to dev: 2.0 means
-	// production is twice as fast. Zero means one of the two never ran.
+	// Prod relative to dev: 2.0 means production is twice as fast, and zero
+	// means one of the two never ran.
 	LatencySpeedup    float64
 	ThroughputSpeedup float64
 }
 
-// comparisonData is everything the dev-versus-prod report needs.
 type comparisonData struct {
 	GeneratedAt string
 	Host        string
@@ -82,8 +77,6 @@ type comparisonData struct {
 	Prod      []Result
 }
 
-// writeComparison renders the report that sets the two profiles against each
-// other, backend by backend.
 func writeComparison(path string, cfg Config, dev, prod []Result) error {
 	devRank := byName(rank(dev))
 	prodRank := byName(rank(prod))
@@ -148,8 +141,6 @@ func render(path, tmplText string, data any) error {
 	return tmpl.Execute(file, data)
 }
 
-// rank reduces each backend to a median-of-medians latency and a summed
-// throughput, then sorts fastest first.
 func rank(results []Result) []ranking {
 	var rows []ranking
 
@@ -188,7 +179,6 @@ func byName(rows []ranking) map[string]ranking {
 	return out
 }
 
-// backendsIn lists the backends a result set covers, in the order they ran.
 func backendsIn(results []Result) []Backend {
 	out := make([]Backend, 0, len(results))
 	for _, r := range results {
@@ -208,7 +198,6 @@ func profileName(profile string) string {
 	return "development"
 }
 
-// findEndpoint locates one endpoint's result within a backend's results.
 func findEndpoint(r Result, endpoint string) (EndpointResult, bool) {
 	for _, er := range r.Endpoints {
 		if er.Endpoint == endpoint {
@@ -218,9 +207,8 @@ func findEndpoint(r Result, endpoint string) (EndpointResult, bool) {
 	return EndpointResult{}, false
 }
 
-// formatDuration prints a duration with a consistent unit and precision, since
-// Go's default switches between microseconds and milliseconds and makes columns
-// hard to compare.
+// Go's default switches between microseconds and milliseconds, which makes
+// columns hard to compare.
 func formatDuration(d time.Duration) string {
 	if d == 0 {
 		return "-"
@@ -235,8 +223,7 @@ func formatRPS(v float64) string {
 	return fmt.Sprintf("%.1f", v)
 }
 
-// formatSpeedup states a ratio as a multiplier, and marks a regression rather
-// than printing a confusing fraction.
+// A regression is marked rather than printed as a confusing fraction.
 func formatSpeedup(v float64) string {
 	switch {
 	case v == 0:
@@ -273,8 +260,7 @@ var reportFuncs = template.FuncMap{
 		}
 		return formatRPS(er.Concurrent.RPS)
 	},
-	// endpointSpeedup compares one endpoint's throughput across two result
-	// sets, matching backends by position.
+	// Backends are matched by position across the two result sets.
 	"endpointSpeedup": func(dev, prod []Result, index int, endpoint string) string {
 		if index >= len(dev) || index >= len(prod) {
 			return "-"

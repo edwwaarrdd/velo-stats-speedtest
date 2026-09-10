@@ -5,7 +5,6 @@ import (
 	"time"
 )
 
-// Stats summarises the latencies of one endpoint on one backend.
 type Stats struct {
 	Count  int
 	Errors int
@@ -17,16 +16,13 @@ type Stats struct {
 	P99    time.Duration
 	Max    time.Duration
 
-	// Elapsed is the wall-clock time the whole batch took, and RPS the
-	// requests per second derived from it. For the sequential pass that is
-	// simply the inverse of the mean; for the concurrent pass it is the number
-	// that matters.
+	// For the sequential pass RPS is simply the inverse of the mean; for the
+	// concurrent pass it is the number that matters.
 	Elapsed time.Duration
 	RPS     float64
 }
 
-// summarise turns raw durations into a Stats. It sorts a copy, so the caller's
-// slice keeps its original order.
+// A copy is sorted, so the caller's slice keeps its original order.
 func summarise(durations []time.Duration, errors int, elapsed time.Duration) Stats {
 	s := Stats{Count: len(durations), Errors: errors, Elapsed: elapsed}
 	if len(durations) == 0 {
@@ -55,7 +51,7 @@ func summarise(durations []time.Duration, errors int, elapsed time.Duration) Sta
 	return s
 }
 
-// percentile picks the nearest-rank value from an already sorted slice.
+// Nearest-rank, over an already sorted slice.
 func percentile(sorted []time.Duration, p float64) time.Duration {
 	if len(sorted) == 0 {
 		return 0
@@ -67,8 +63,8 @@ func percentile(sorted []time.Duration, p float64) time.Duration {
 	return sorted[index]
 }
 
-// medianOf returns the median of a set of already-computed medians, which is
-// how a backend's overall latency is summarised across its endpoints.
+// A median of already-computed medians is how a backend's overall latency is
+// summarised across its endpoints.
 func medianOf(values []time.Duration) time.Duration {
 	if len(values) == 0 {
 		return 0

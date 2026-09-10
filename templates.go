@@ -1,9 +1,5 @@
 package main
 
-// The Markdown templates for the three reports. Keeping them here rather than
-// scattered through the rendering code means the shape of a report is visible
-// in one place.
-
 const reportTemplate = `# Velo-stats backend speed test - {{ .ProfileName }} stack
 
 Generated {{ .GeneratedAt }} on {{ .Host }} with {{ .Docker }}.

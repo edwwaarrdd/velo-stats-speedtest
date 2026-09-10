@@ -8,7 +8,6 @@ import (
 	"time"
 )
 
-// EndpointResult holds everything measured for one endpoint on one backend.
 type EndpointResult struct {
 	Endpoint string // canonical path, e.g. /rides
 	URL      string // what was actually requested
@@ -20,22 +19,19 @@ type EndpointResult struct {
 	Concurrent Stats
 }
 
-// Result holds everything measured for one backend in one profile.
 type Result struct {
 	Backend    Backend
 	Profile    string
 	Deployment Deployment
 	Endpoints  []EndpointResult
 
-	// Failed is set when the backend could not be started or preflighted, in
-	// which case Endpoints is empty and Note explains why.
 	Failed bool
 	Note   string
 }
 
-// newClient builds an HTTP client with keep-alives on and enough idle
-// connections for the concurrent pass, so we measure the server rather than TCP
-// handshakes. Redirects are refused: a 3xx means we requested the wrong path.
+// Keep-alives and idle connections are sized for the concurrent pass, so we
+// measure the server rather than TCP handshakes. Redirects are refused: a 3xx
+// means we requested the wrong path.
 func newClient(concurrency int) *http.Client {
 	transport := http.DefaultTransport.(*http.Transport).Clone()
 	transport.MaxIdleConns = concurrency * 2
@@ -51,8 +47,7 @@ func newClient(concurrency int) *http.Client {
 	}
 }
 
-// doRequest performs one GET, draining the body so the server's full response
-// time is measured, and reports how long it took plus how many bytes came back.
+// The body is drained, so the server's full response time is measured.
 func doRequest(client *http.Client, url string) (time.Duration, int, int64, error) {
 	start := time.Now()
 
@@ -73,8 +68,6 @@ func doRequest(client *http.Client, url string) (time.Duration, int, int64, erro
 	return elapsed, resp.StatusCode, n, nil
 }
 
-// benchmarkBackend runs the preflight, warmup, sequential and concurrent passes
-// for every endpoint of one already-running backend.
 func benchmarkBackend(b Backend, profile string, cfg Config) Result {
 	client := newClient(cfg.Concurrency)
 	result := Result{Backend: b, Profile: profile, Deployment: b.Deployment(profile)}
@@ -112,8 +105,8 @@ func benchmarkBackend(b Backend, profile string, cfg Config) Result {
 	return result
 }
 
-// runSequential issues n requests one after another: pure per-request latency
-// with no queuing of our own making.
+// One request after another: pure per-request latency with no queuing of our
+// own making.
 func runSequential(client *http.Client, url string, n int) Stats {
 	durations := make([]time.Duration, 0, n)
 	errors := 0
@@ -130,8 +123,8 @@ func runSequential(client *http.Client, url string, n int) Stats {
 	return summarise(durations, errors, time.Since(start))
 }
 
-// runConcurrent issues n requests spread over `concurrency` workers, which is
-// where a single-process server separates from a multi-threaded one.
+// Spreading the requests over workers is where a single-process server
+// separates from a multi-threaded one.
 func runConcurrent(client *http.Client, url string, n, concurrency int) Stats {
 	type outcome struct {
 		duration time.Duration

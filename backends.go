@@ -1,16 +1,11 @@
 package main
 
-// Deployment is one way of running a backend: which Compose file describes it,
-// which service exposes the HTTP port, and a one-line description that ends up
-// in the report so the numbers are readable without opening the compose file.
 type Deployment struct {
 	ComposeFile string
 	Service     string
 	Description string
 }
 
-// Backend describes one implementation of the velo-stats API, in both of the
-// shapes it can be run in.
 type Backend struct {
 	Name     string // short name, also the value accepted by -only
 	Language string // shown in the report
@@ -20,13 +15,11 @@ type Backend struct {
 	Dev  Deployment
 	Prod Deployment
 
-	// PathOverrides remaps a canonical endpoint path for this backend only.
 	// Django mounts its list endpoints with a trailing slash and 301-redirects
 	// the unslashed form, which would charge it for an extra round trip.
 	PathOverrides map[string]string
 }
 
-// Deployment returns the deployment for the given profile.
 func (b Backend) Deployment(profile string) Deployment {
 	if profile == ProfileProd {
 		return b.Prod
@@ -34,7 +27,6 @@ func (b Backend) Deployment(profile string) Deployment {
 	return b.Dev
 }
 
-// Path returns the URL path this backend serves the given canonical endpoint on.
 func (b Backend) Path(endpoint string) string {
 	if override, ok := b.PathOverrides[endpoint]; ok {
 		return override
@@ -42,18 +34,15 @@ func (b Backend) Path(endpoint string) string {
 	return endpoint
 }
 
-// The two profiles. Development is each repo's own docker-compose.yml, the
-// stack a contributor runs. Production is docker-compose.prod.yml, added
-// alongside it: real application servers, no bind mounts, the seeded database
-// baked into the image, and the same CPU allowance for every backend.
+// Development is each repo's own docker-compose.yml. Production is
+// docker-compose.prod.yml alongside it: real application servers, no bind
+// mounts, the seeded database baked into the image, and the same CPU allowance
+// for every backend.
 const (
 	ProfileDev  = "dev"
 	ProfileProd = "prod"
 )
 
-// endpoints are the canonical paths, in the order they appear in the report.
-// Every backend exposes all four as parameterless GETs.
-//
 // /_healthcheck is deliberately excluded: it does no work (see
 // HealthcheckHandler and its equivalents in the other backends), so
 // benchmarking it measures framework dispatch overhead rather than anything
@@ -66,8 +55,6 @@ var endpoints = []string{
 	"/stations",
 }
 
-// repoRoot is the directory holding all the velo-stats checkouts. It is the
-// parent of this harness's own directory.
 const repoRoot = ".."
 
 var backends = []Backend{
