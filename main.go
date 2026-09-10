@@ -102,7 +102,8 @@ func run(b Backend, profile string, cfg Config) Result {
 
 	logf("  starting containers...")
 	if err := startBackend(b, d, !cfg.SkipBuild); err != nil {
-		stopBackend(b, d)
+		// Best effort: a half-started deployment still leaves containers behind.
+		_ = stopBackend(b, d)
 		return failure(b, profile, d, fmt.Sprintf("could not start containers: %v", err))
 	}
 	defer func() {

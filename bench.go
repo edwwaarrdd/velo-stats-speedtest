@@ -95,7 +95,7 @@ func benchmarkBackend(b Backend, profile string, cfg Config) Result {
 		// Warmup, discarded: pays for JIT, opcode caching, connection setup and
 		// the SQLite page cache before anything is measured.
 		for i := 0; i < cfg.Warmup; i++ {
-			doRequest(client, url)
+			_, _, _, _ = doRequest(client, url)
 		}
 
 		er.Sequential = runSequential(client, url, cfg.Requests)
