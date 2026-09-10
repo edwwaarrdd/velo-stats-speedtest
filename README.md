@@ -2,7 +2,9 @@
 
 A benchmark harness that compares the five velo-stats backend implementations -
 Go, NestJS, Laravel, Symfony and Django - on the four HTTP endpoints they all
-expose.
+expose. Each of them serves the same data: a ride export enriched with weather
+from the free Open-Meteo archive and cycling distances from the public OSRM
+routing API.
 
 It starts one backend at a time with Docker Compose, waits for its health check,
 measures every endpoint, tears the containers down, and moves on to the next.
