@@ -1,7 +1,7 @@
 # velo-stats-speedtest
 
 A benchmark harness that compares the five velo-stats backend implementations -
-Go, NestJS, Laravel, Symfony and Django - on the five HTTP endpoints they all
+Go, NestJS, Laravel, Symfony and Django - on the four HTTP endpoints they all
 expose.
 
 It starts one backend at a time with Docker Compose, waits for its health check,

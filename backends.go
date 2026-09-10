@@ -52,9 +52,14 @@ const (
 )
 
 // endpoints are the canonical paths, in the order they appear in the report.
-// Every backend exposes all five as parameterless GETs.
+// Every backend exposes all four as parameterless GETs.
+//
+// /_healthcheck is deliberately excluded: it does no work (see
+// HealthcheckHandler and its equivalents in the other backends), so
+// benchmarking it measures framework dispatch overhead rather than anything
+// the application does. It is still used on its own by waitForHealthy to
+// decide when a backend is ready.
 var endpoints = []string{
-	"/_healthcheck",
 	"/rides",
 	"/rides/summary",
 	"/rides/cost",

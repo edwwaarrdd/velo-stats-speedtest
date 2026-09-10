@@ -29,8 +29,8 @@ from the host and no CPU limits are applied.
 
 ## Ranking
 
-Median latency is the median of each backend's five per-endpoint medians in the
-sequential pass. Throughput is the sum of the five endpoints' concurrent
+Median latency is the median of each backend's four per-endpoint medians in the
+sequential pass. Throughput is the sum of the four endpoints' concurrent
 requests per second. Fastest first.
 
 | # | Backend | Stack | Setup | Median latency | Throughput (req/s) | Errors |
@@ -95,15 +95,14 @@ A ranking of five backends invites being read as a ranking of five frameworks.
 It is not one, and the numbers themselves say so.
 
 Split each backend's latency into the part that does not depend on the data and
-the part that does. ` + "`/_healthcheck`" + ` returns a fixed string and touches
-neither the database nor an entity, so it isolates the cost of accepting a
-request and routing it. Every other endpoint adds work proportional to the rows
-it serves: 158 rides, 321 stations.
-
-Measured that way, the fixed cost separates the backends by well under a
-millisecond. What separates them by multiples is the per-row cost, and per-row
-cost is decided by how much of an object each row is turned into on the way out.
-Timing that work inside the Laravel implementation, on 158 rides:
+the part that does. A trivial endpoint that touches neither the database nor an
+entity - this harness used to include one, ` + "`/_healthcheck`" + `, before dropping
+it as measuring nothing the applications do - isolates the cost of accepting a
+request and routing it, and separates the backends by well under a millisecond.
+Every endpoint below adds work proportional to the rows it serves: 158 rides,
+321 stations. What separates the backends by multiples is that per-row cost,
+and per-row cost is decided by how much of an object each row is turned into on
+the way out. Timing that work inside the Laravel implementation, on 158 rides:
 
 | Stage | Time |
 | --- | --- |
