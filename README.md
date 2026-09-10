@@ -1,7 +1,8 @@
 # velo-stats-speedtest
 
-A benchmark harness that compares the four velo-stats backend implementations -
-Go, NestJS, Laravel and Django - on the five HTTP endpoints they all expose.
+A benchmark harness that compares the five velo-stats backend implementations -
+Go, NestJS, Laravel, Symfony and Django - on the five HTTP endpoints they all
+expose.
 
 It starts one backend at a time with Docker Compose, waits for its health check,
 measures every endpoint, tears the containers down, and moves on to the next.
@@ -26,6 +27,7 @@ time, and each backend runs a real application server:
 | Go | `velo serve`, all host cores | same binary, `GOMAXPROCS=4` |
 | NestJS | one Node process | four clustered Node processes |
 | Laravel | `php artisan serve`, no OPcache | nginx to a four-worker PHP-FPM pool, OPcache with JIT |
+| Symfony | `php -S`, no OPcache | nginx to a four-worker PHP-FPM pool, OPcache with JIT |
 | Django | gunicorn, one worker, `--reload` | gunicorn, four preloaded workers |
 
 Every production container is capped at four CPUs, and every single-threaded
@@ -53,6 +55,7 @@ velo-stats/
   velo-stats-laravel/
   velo-stats-nodejs/
   velo-stats-python/
+  velo-stats-symfony/
   velo-stats-speedtest/   <- run from here
 ```
 
@@ -70,7 +73,7 @@ docker run --rm -v "$PWD":/src -w /src -e CGO_ENABLED=0 -e GOOS=darwin -e GOARCH
 
 Then `./speedtest`.
 
-A full run builds eight images and issues a thousand requests per backend per
+A full run builds ten images and issues a thousand requests per backend per
 profile, so it takes a while. To iterate quickly, narrow it:
 
 ```bash
@@ -84,7 +87,7 @@ go run . -only php -profile prod -requests 10 -warmup 2 -skip-build
 | `-requests` | 100 | Requests per endpoint, in each of the two passes |
 | `-concurrency` | 10 | Parallel requests during the concurrent pass |
 | `-warmup` | 20 | Discarded requests per endpoint before measuring |
-| `-only` | all | Run one backend: `golang`, `nodejs`, `php` or `python` |
+| `-only` | all | Run one backend: `golang`, `nodejs`, `php`, `symfony` or `python` |
 | `-profile` | `both` | Which stack to measure: `dev`, `prod` or `both` |
 | `-skip-build` | false | Reuse the existing image instead of `--build` |
 | `-out` | `.` | Directory to write the reports into |
@@ -114,7 +117,7 @@ during a benchmark, but they compete for CPU while they boot.
 | File | Contents |
 | --- | --- |
 | `main.go` | Flags and the loop over backends and profiles |
-| `backends.go` | The four backend definitions, both profiles, and the endpoint list |
+| `backends.go` | The five backend definitions, both profiles, and the endpoint list |
 | `docker.go` | Compose wrappers and the health-check poll |
 | `bench.go` | The sequential and concurrent passes |
 | `stats.go` | Percentiles and throughput |

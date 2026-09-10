@@ -115,6 +115,22 @@ var backends = []Backend{
 		},
 	},
 	{
+		Name:     "symfony",
+		Language: "Symfony 8.1 / PHP 8.5",
+		Dir:      repoRoot + "/velo-stats-symfony",
+		BaseURL:  "http://127.0.0.1:8000",
+		Dev: Deployment{
+			ComposeFile: "docker-compose.yml",
+			Service:     "app",
+			Description: "php -S, one request at a time, no OPcache",
+		},
+		Prod: Deployment{
+			ComposeFile: "docker-compose.prod.yml",
+			Service:     "web",
+			Description: "nginx to a 4-worker PHP-FPM pool, OPcache with JIT",
+		},
+	},
+	{
 		Name:     "python",
 		Language: "Django 6 / gunicorn",
 		Dir:      repoRoot + "/velo-stats-python",

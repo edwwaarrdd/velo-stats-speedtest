@@ -1,6 +1,6 @@
 # Velo-stats backend speed test - development stack
 
-Generated 2026-09-10 09:13:06 CEST on darwin/arm64, 12 CPUs with Docker version 29.7.2, build a7dcaa6.
+Generated 2026-09-10 10:46:16 CEST on darwin/arm64, 12 CPUs with Docker version 29.7.2, build a7dcaa6.
 
 Each backend was started on its own, warmed up, measured, then torn down before
 the next one started. No two backends ran at the same time.
@@ -24,30 +24,31 @@ requests per second. Fastest first.
 
 | # | Backend | Stack | Setup | Median latency | Throughput (req/s) | Errors |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | golang | Go 1.25 | net/http, bind-mounted SQLite, all cores | 0.54 ms | 24901.9 | 0 |
-| 2 | nodejs | NestJS 11 / Node 22 | single Node process, bind-mounted source and SQLite | 0.80 ms | 10222.3 | 0 |
-| 3 | python | Django 6 / gunicorn | gunicorn, 1 worker, --reload, bind-mounted source | 1.58 ms | 5443.9 | 0 |
-| 4 | php | Laravel 13 / PHP 8.4 | php artisan serve, one request at a time, no OPcache | 7.01 ms | 882.0 | 0 |
+| 1 | golang | Go 1.25 | net/http, bind-mounted SQLite, all cores | 0.54 ms | 22859.8 | 0 |
+| 2 | nodejs | NestJS 11 / Node 22 | single Node process, bind-mounted source and SQLite | 0.83 ms | 9767.5 | 0 |
+| 3 | python | Django 6 / gunicorn | gunicorn, 1 worker, --reload, bind-mounted source | 1.61 ms | 5469.4 | 0 |
+| 4 | symfony | Symfony 8.1 / PHP 8.5 | php -S, one request at a time, no OPcache | 3.63 ms | 1891.1 | 0 |
+| 5 | php | Laravel 13 / PHP 8.4 | php artisan serve, one request at a time, no OPcache | 7.18 ms | 855.2 | 0 |
 
 ## Median latency per endpoint (sequential)
 
-| Endpoint | golang | nodejs | php | python |
-| --- | --- | --- | --- | --- |
-| `/_healthcheck` | 0.24 ms | 0.35 ms | 3.02 ms | 0.68 ms |
-| `/rides` | 3.02 ms | 3.85 ms | 19.74 ms | 6.11 ms |
-| `/rides/summary` | 0.54 ms | 0.42 ms | 3.94 ms | 1.99 ms |
-| `/rides/cost` | 0.47 ms | 0.80 ms | 14.85 ms | 1.40 ms |
-| `/stations` | 1.07 ms | 1.65 ms | 7.01 ms | 1.58 ms |
+| Endpoint | golang | nodejs | php | symfony | python |
+| --- | --- | --- | --- | --- | --- |
+| `/_healthcheck` | 0.29 ms | 0.42 ms | 2.74 ms | 1.68 ms | 0.58 ms |
+| `/rides` | 3.17 ms | 4.14 ms | 22.94 ms | 7.53 ms | 6.20 ms |
+| `/rides/summary` | 0.54 ms | 0.42 ms | 4.30 ms | 4.13 ms | 1.95 ms |
+| `/rides/cost` | 0.45 ms | 0.83 ms | 16.39 ms | 3.49 ms | 1.44 ms |
+| `/stations` | 1.09 ms | 1.65 ms | 7.18 ms | 3.63 ms | 1.61 ms |
 
 ## Throughput per endpoint (concurrent, req/s)
 
-| Endpoint | golang | nodejs | php | python |
-| --- | --- | --- | --- | --- |
-| `/_healthcheck` | 16739.6 | 4685.5 | 354.3 | 3163.0 |
-| `/rides` | 489.6 | 265.7 | 52.1 | 168.5 |
-| `/rides/summary` | 2866.1 | 3230.5 | 268.3 | 599.3 |
-| `/rides/cost` | 3541.3 | 1426.6 | 67.8 | 798.6 |
-| `/stations` | 1265.3 | 614.0 | 139.4 | 714.6 |
+| Endpoint | golang | nodejs | php | symfony | python |
+| --- | --- | --- | --- | --- | --- |
+| `/_healthcheck` | 14325.3 | 4419.3 | 324.4 | 829.2 | 3069.8 |
+| `/rides` | 487.7 | 252.3 | 46.3 | 165.7 | 167.4 |
+| `/rides/summary` | 3089.9 | 3031.9 | 267.8 | 290.8 | 611.5 |
+| `/rides/cost` | 3701.0 | 1412.9 | 66.0 | 312.7 | 880.5 |
+| `/stations` | 1255.8 | 651.0 | 150.7 | 292.8 | 740.3 |
 
 ## Detail per backend
 
@@ -57,11 +58,11 @@ net/http, bind-mounted SQLite, all cores (`docker-compose.yml`, service `app`)
 
 | Endpoint | Status | Body | Min | Median | p95 | p99 | Max | Errors | Concurrent req/s |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 0.17 ms | 0.24 ms | 0.34 ms | 0.48 ms | 0.48 ms | 0 | 16739.6 |
-| `http://127.0.0.1:8000/rides` | 200 | 125.2 KB | 2.77 ms | 3.02 ms | 3.35 ms | 3.61 ms | 3.61 ms | 0 | 489.6 |
-| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 0.48 ms | 0.54 ms | 0.60 ms | 0.61 ms | 0.61 ms | 0 | 2866.1 |
-| `http://127.0.0.1:8000/rides/cost` | 200 | 341 B | 0.40 ms | 0.47 ms | 0.68 ms | 1.25 ms | 1.25 ms | 0 | 3541.3 |
-| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 0.94 ms | 1.07 ms | 1.36 ms | 1.44 ms | 1.44 ms | 0 | 1265.3 |
+| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 0.18 ms | 0.29 ms | 1.21 ms | 3.88 ms | 3.88 ms | 0 | 14325.3 |
+| `http://127.0.0.1:8000/rides` | 200 | 125.2 KB | 2.85 ms | 3.17 ms | 3.47 ms | 3.61 ms | 3.61 ms | 0 | 487.7 |
+| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 0.49 ms | 0.54 ms | 0.62 ms | 1.21 ms | 1.21 ms | 0 | 3089.9 |
+| `http://127.0.0.1:8000/rides/cost` | 200 | 341 B | 0.42 ms | 0.45 ms | 0.66 ms | 0.73 ms | 0.73 ms | 0 | 3701.0 |
+| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 1.00 ms | 1.09 ms | 1.37 ms | 1.54 ms | 1.54 ms | 0 | 1255.8 |
 
 ### nodejs - NestJS 11 / Node 22
 
@@ -69,11 +70,11 @@ single Node process, bind-mounted source and SQLite (`docker-compose.yml`, servi
 
 | Endpoint | Status | Body | Min | Median | p95 | p99 | Max | Errors | Concurrent req/s |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 0.29 ms | 0.35 ms | 0.55 ms | 0.65 ms | 0.65 ms | 0 | 4685.5 |
-| `http://127.0.0.1:8000/rides` | 200 | 123.0 KB | 3.67 ms | 3.85 ms | 4.21 ms | 4.32 ms | 4.32 ms | 0 | 265.7 |
-| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 0.39 ms | 0.42 ms | 0.48 ms | 0.50 ms | 0.50 ms | 0 | 3230.5 |
-| `http://127.0.0.1:8000/rides/cost` | 200 | 335 B | 0.72 ms | 0.80 ms | 0.90 ms | 1.26 ms | 1.26 ms | 0 | 1426.6 |
-| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 1.54 ms | 1.65 ms | 1.87 ms | 2.07 ms | 2.07 ms | 0 | 614.0 |
+| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 0.29 ms | 0.42 ms | 0.60 ms | 3.93 ms | 3.93 ms | 0 | 4419.3 |
+| `http://127.0.0.1:8000/rides` | 200 | 123.0 KB | 3.81 ms | 4.14 ms | 4.59 ms | 5.20 ms | 5.20 ms | 0 | 252.3 |
+| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 0.37 ms | 0.42 ms | 0.50 ms | 0.71 ms | 0.71 ms | 0 | 3031.9 |
+| `http://127.0.0.1:8000/rides/cost` | 200 | 335 B | 0.75 ms | 0.83 ms | 0.97 ms | 1.39 ms | 1.39 ms | 0 | 1412.9 |
+| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 1.51 ms | 1.65 ms | 1.79 ms | 1.89 ms | 1.89 ms | 0 | 651.0 |
 
 ### php - Laravel 13 / PHP 8.4
 
@@ -81,11 +82,23 @@ php artisan serve, one request at a time, no OPcache (`docker-compose.yml`, serv
 
 | Endpoint | Status | Body | Min | Median | p95 | p99 | Max | Errors | Concurrent req/s |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 2.65 ms | 3.02 ms | 3.58 ms | 3.81 ms | 3.81 ms | 0 | 354.3 |
-| `http://127.0.0.1:8000/rides` | 200 | 125.2 KB | 19.00 ms | 19.74 ms | 20.99 ms | 21.78 ms | 21.78 ms | 0 | 52.1 |
-| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 3.77 ms | 3.94 ms | 4.10 ms | 8.27 ms | 8.27 ms | 0 | 268.3 |
-| `http://127.0.0.1:8000/rides/cost` | 200 | 341 B | 13.81 ms | 14.85 ms | 18.58 ms | 19.52 ms | 19.52 ms | 0 | 67.8 |
-| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 6.46 ms | 7.01 ms | 7.93 ms | 12.70 ms | 12.70 ms | 0 | 139.4 |
+| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 2.55 ms | 2.74 ms | 3.53 ms | 3.75 ms | 3.75 ms | 0 | 324.4 |
+| `http://127.0.0.1:8000/rides` | 200 | 125.2 KB | 21.27 ms | 22.94 ms | 26.80 ms | 31.02 ms | 31.02 ms | 0 | 46.3 |
+| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 3.96 ms | 4.30 ms | 4.81 ms | 10.18 ms | 10.18 ms | 0 | 267.8 |
+| `http://127.0.0.1:8000/rides/cost` | 200 | 341 B | 14.47 ms | 16.39 ms | 21.01 ms | 34.41 ms | 34.41 ms | 0 | 66.0 |
+| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 6.54 ms | 7.18 ms | 13.35 ms | 20.77 ms | 20.77 ms | 0 | 150.7 |
+
+### symfony - Symfony 8.1 / PHP 8.5
+
+php -S, one request at a time, no OPcache (`docker-compose.yml`, service `app`)
+
+| Endpoint | Status | Body | Min | Median | p95 | p99 | Max | Errors | Concurrent req/s |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `http://127.0.0.1:8000/_healthcheck` | 200 | 16 B | 1.48 ms | 1.68 ms | 2.22 ms | 7.43 ms | 7.43 ms | 0 | 829.2 |
+| `http://127.0.0.1:8000/rides` | 200 | 125.2 KB | 5.87 ms | 7.53 ms | 10.47 ms | 27.52 ms | 27.52 ms | 0 | 165.7 |
+| `http://127.0.0.1:8000/rides/summary` | 200 | 186 B | 3.57 ms | 4.13 ms | 5.31 ms | 6.60 ms | 6.60 ms | 0 | 290.8 |
+| `http://127.0.0.1:8000/rides/cost` | 200 | 341 B | 3.10 ms | 3.49 ms | 4.07 ms | 4.28 ms | 4.28 ms | 0 | 312.7 |
+| `http://127.0.0.1:8000/stations` | 200 | 24.2 KB | 3.30 ms | 3.63 ms | 4.09 ms | 10.60 ms | 10.60 ms | 0 | 292.8 |
 
 ### python - Django 6 / gunicorn
 
@@ -93,11 +106,11 @@ gunicorn, 1 worker, --reload, bind-mounted source (`docker-compose.yml`, service
 
 | Endpoint | Status | Body | Min | Median | p95 | p99 | Max | Errors | Concurrent req/s |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `http://127.0.0.1:8000/_healthcheck` | 200 | 17 B | 0.53 ms | 0.68 ms | 0.91 ms | 1.21 ms | 1.21 ms | 0 | 3163.0 |
-| `http://127.0.0.1:8000/rides/` | 200 | 134.7 KB | 5.74 ms | 6.11 ms | 7.00 ms | 8.96 ms | 8.96 ms | 0 | 168.5 |
-| `http://127.0.0.1:8000/rides/summary` | 200 | 199 B | 1.79 ms | 1.99 ms | 2.76 ms | 4.54 ms | 4.54 ms | 0 | 599.3 |
-| `http://127.0.0.1:8000/rides/cost` | 200 | 362 B | 1.26 ms | 1.40 ms | 1.61 ms | 2.69 ms | 2.69 ms | 0 | 798.6 |
-| `http://127.0.0.1:8000/stations/` | 200 | 26.8 KB | 1.48 ms | 1.58 ms | 1.70 ms | 1.89 ms | 1.89 ms | 0 | 714.6 |
+| `http://127.0.0.1:8000/_healthcheck` | 200 | 17 B | 0.47 ms | 0.58 ms | 0.81 ms | 0.92 ms | 0.92 ms | 0 | 3069.8 |
+| `http://127.0.0.1:8000/rides/` | 200 | 134.7 KB | 5.79 ms | 6.20 ms | 6.77 ms | 7.07 ms | 7.07 ms | 0 | 167.4 |
+| `http://127.0.0.1:8000/rides/summary` | 200 | 199 B | 1.78 ms | 1.95 ms | 2.24 ms | 2.44 ms | 2.44 ms | 0 | 611.5 |
+| `http://127.0.0.1:8000/rides/cost` | 200 | 362 B | 1.31 ms | 1.44 ms | 1.58 ms | 1.98 ms | 1.98 ms | 0 | 880.5 |
+| `http://127.0.0.1:8000/stations/` | 200 | 26.8 KB | 1.50 ms | 1.61 ms | 1.86 ms | 2.21 ms | 2.21 ms | 0 | 740.3 |
 
 ## How to read this, and what it does not say
 

@@ -1,6 +1,6 @@
 # Velo-stats backends: development stack versus production stack
 
-Generated 2026-09-10 09:13:06 CEST on darwin/arm64, 12 CPUs with Docker version 29.7.2, build a7dcaa6.
+Generated 2026-09-10 10:46:16 CEST on darwin/arm64, 12 CPUs with Docker version 29.7.2, build a7dcaa6.
 
 Both stacks were measured in the same run, minutes apart, on the same machine.
 The development profile is each repo's own `docker-compose.yml`. The production
@@ -22,6 +22,7 @@ backend's measured slowness was really its development server.
 
 | Backend | Development | Production |
 | --- | --- | --- |
+| symfony | php -S, one request at a time, no OPcache | nginx to a 4-worker PHP-FPM pool, OPcache with JIT |
 | php | php artisan serve, one request at a time, no OPcache | nginx to a 4-worker PHP-FPM pool, OPcache with JIT |
 | python | gunicorn, 1 worker, --reload, bind-mounted source | gunicorn, 4 preloaded workers, baked-in SQLite |
 | nodejs | single Node process, bind-mounted source and SQLite | 4 clustered Node processes, baked-in SQLite |
@@ -31,33 +32,34 @@ backend's measured slowness was really its development server.
 
 | Backend | Dev latency | Prod latency | Latency change | Dev req/s | Prod req/s | Throughput change |
 | --- | --- | --- | --- | --- | --- | --- |
-| php | 7.01 ms | 3.98 ms | 1.76x faster | 882.0 | 7344.7 | 8.33x faster |
-| python | 1.58 ms | 1.31 ms | 1.20x faster | 5443.9 | 18177.5 | 3.34x faster |
-| nodejs | 0.80 ms | 0.76 ms | 1.05x faster | 10222.3 | 28487.5 | 2.79x faster |
-| golang | 0.54 ms | 0.50 ms | 1.07x faster | 24901.9 | 26338.4 | 1.06x faster |
+| symfony | 3.63 ms | 1.16 ms | 3.12x faster | 1891.1 | 18440.8 | 9.75x faster |
+| php | 7.18 ms | 4.41 ms | 1.63x faster | 855.2 | 6407.7 | 7.49x faster |
+| python | 1.61 ms | 1.36 ms | 1.19x faster | 5469.4 | 20979.4 | 3.84x faster |
+| nodejs | 0.83 ms | 1.67 ms | 2.02x slower | 9767.5 | 15746.4 | 1.61x faster |
+| golang | 0.54 ms | 0.52 ms | 1.04x faster | 22859.8 | 24185.5 | 1.06x faster |
 
 ## Throughput change per endpoint
 
 Production requests per second divided by development requests per second, for
 each endpoint.
 
-| Endpoint | golang | nodejs | php | python |
-| --- | --- | --- | --- | --- |
-| `/_healthcheck` | 1.03x faster | 2.10x faster | 9.94x faster | 1.64x faster |
-| `/rides` | 1.09x faster | 2.18x faster | 4.49x faster | 4.27x faster |
-| `/rides/summary` | 1.16x faster | 3.50x faster | 8.44x faster | 5.11x faster |
-| `/rides/cost` | 1.06x faster | 3.10x faster | 5.71x faster | 6.70x faster |
-| `/stations` | 1.11x faster | 3.81x faster | 6.71x faster | 5.39x faster |
+| Endpoint | golang | nodejs | php | symfony | python |
+| --- | --- | --- | --- | --- | --- |
+| `/_healthcheck` | 1.10x faster | 1.29x faster | 8.49x faster | 8.05x faster | 2.69x faster |
+| `/rides` | 1.02x faster | 1.44x faster | 4.77x faster | 8.12x faster | 3.84x faster |
+| `/rides/summary` | 1.01x slower | 1.17x faster | 8.72x faster | 12.59x faster | 4.71x faster |
+| `/rides/cost` | 1.02x slower | 2.79x faster | 5.55x faster | 11.56x faster | 5.87x faster |
+| `/stations` | 1.03x faster | 3.37x faster | 4.86x faster | 10.74x faster | 5.45x faster |
 
 ## Median latency side by side
 
-| Endpoint | golang dev | golang prod | nodejs dev | nodejs prod | php dev | php prod | python dev | python prod |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `/_healthcheck` | 0.24 ms | 0.24 ms | 0.35 ms | 0.37 ms | 3.02 ms | 1.15 ms | 0.68 ms | 0.56 ms |
-| `/rides` | 3.02 ms | 2.81 ms | 3.85 ms | 3.86 ms | 19.74 ms | 16.12 ms | 6.11 ms | 5.54 ms |
-| `/rides/summary` | 0.54 ms | 0.50 ms | 0.42 ms | 0.42 ms | 3.94 ms | 1.73 ms | 1.99 ms | 1.56 ms |
-| `/rides/cost` | 0.47 ms | 0.42 ms | 0.80 ms | 0.76 ms | 14.85 ms | 10.15 ms | 1.40 ms | 1.06 ms |
-| `/stations` | 1.07 ms | 0.97 ms | 1.65 ms | 1.59 ms | 7.01 ms | 3.98 ms | 1.58 ms | 1.31 ms |
+| Endpoint | golang dev | golang prod | nodejs dev | nodejs prod | php dev | php prod | symfony dev | symfony prod | python dev | python prod |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `/_healthcheck` | 0.29 ms | 0.32 ms | 0.42 ms | 0.38 ms | 2.74 ms | 1.21 ms | 1.68 ms | 0.68 ms | 0.58 ms | 0.66 ms |
+| `/rides` | 3.17 ms | 3.07 ms | 4.14 ms | 4.63 ms | 22.94 ms | 17.38 ms | 7.53 ms | 3.06 ms | 6.20 ms | 6.06 ms |
+| `/rides/summary` | 0.54 ms | 0.52 ms | 0.42 ms | 1.35 ms | 4.30 ms | 1.75 ms | 4.13 ms | 1.11 ms | 1.95 ms | 1.69 ms |
+| `/rides/cost` | 0.45 ms | 0.47 ms | 0.83 ms | 1.67 ms | 16.39 ms | 10.99 ms | 3.49 ms | 1.16 ms | 1.44 ms | 1.11 ms |
+| `/stations` | 1.09 ms | 1.11 ms | 1.65 ms | 1.83 ms | 7.18 ms | 4.41 ms | 3.63 ms | 1.29 ms | 1.61 ms | 1.36 ms |
 
 ## Reading the gap
 
