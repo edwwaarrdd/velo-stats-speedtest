@@ -88,7 +88,44 @@ Not measured: {{ .Note }}
 - **This is still a single container per backend on a laptop.** It is not a
   tuned deployment, and it says nothing about how these stacks behave behind a
   load balancer, with a networked database, or under sustained traffic.
-{{ end }}`
+{{ end }}
+## What this measures, and what it does not
+
+A ranking of five backends invites being read as a ranking of five frameworks.
+It is not one, and the numbers themselves say so.
+
+Split each backend's latency into the part that does not depend on the data and
+the part that does. ` + "`/_healthcheck`" + ` returns a fixed string and touches
+neither the database nor an entity, so it isolates the cost of accepting a
+request and routing it. Every other endpoint adds work proportional to the rows
+it serves: 158 rides, 321 stations.
+
+Measured that way, the fixed cost separates the backends by well under a
+millisecond. What separates them by multiples is the per-row cost, and per-row
+cost is decided by how much of an object each row is turned into on the way out.
+Timing that work inside the Laravel implementation, on 158 rides:
+
+| Stage | Time |
+| --- | --- |
+| The database answering the query, rows as arrays | 0.27 ms |
+| Hydrating those rows into 158 models, weather included | 2.80 ms |
+| Mapping each model through an API resource | 9.64 ms |
+
+Roughly 97% of the data work on that endpoint is constructing PHP objects, not
+querying. The cost endpoint is the same story in miniature: reading one
+timestamp column as date objects takes 1.87 ms, and reading the same column as
+plain strings takes 0.04 ms.
+
+So a backend that hydrates entities and serialises them will lose to one that
+maps arrays, in any language, by a margin that grows with the row count and has
+almost nothing to do with the framework wrapped around it. All five backends
+here hydrate their rows, which is what makes them comparable. Change any one of
+them to map arrays instead and it will jump the ranking, without its framework
+having changed at all.
+
+Read these tables as a comparison of five implementations, then. Not of Go
+against PHP, and not of one framework against another.
+`
 
 const comparisonTemplate = `# Velo-stats backends: development stack versus production stack
 

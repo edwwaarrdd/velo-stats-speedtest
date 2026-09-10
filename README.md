@@ -139,3 +139,6 @@ numbers do:
   inside the image and that layer is gone. Part of the production gain is this,
   not the application server.
 - One run on one machine is not a conclusion. Re-run before trusting a small gap.
+- The ranking compares five implementations, not five frameworks. Most of the
+  spread is per-row object construction rather than framework overhead, which
+  the closing section of each report sets out with measurements.
