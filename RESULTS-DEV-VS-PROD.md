@@ -1,6 +1,6 @@
 # Velo-stats backends: development stack versus production stack
 
-Generated 2026-09-10 13:26:04 CEST on darwin/arm64, 12 CPUs with Docker version 29.7.2, build a7dcaa6.
+Generated 2026-09-10 13:38:18 CEST on darwin/arm64, 12 CPUs with Docker version 29.7.2, build a7dcaa6.
 
 Both stacks were measured in the same run, minutes apart, on the same machine.
 The development profile is each repo's own `docker-compose.yml`. The production
@@ -14,7 +14,7 @@ backend's measured slowness was really its development server.
 
 | Setting | Value |
 | --- | --- |
-| Requests per endpoint per pass | 100 |
+| Requests per endpoint per pass | 500 |
 | Concurrency in the concurrent pass | 10 |
 | Discarded warmup requests per endpoint | 20 |
 
@@ -32,11 +32,11 @@ backend's measured slowness was really its development server.
 
 | Backend | Dev latency | Prod latency | Latency change | Dev req/s | Prod req/s | Throughput change |
 | --- | --- | --- | --- | --- | --- | --- |
-| symfony | 3.79 ms | 1.12 ms | 3.38x faster | 1744.3 | 16780.6 | 9.62x faster |
-| laravel | 6.56 ms | 4.44 ms | 1.48x faster | 989.4 | 7018.5 | 7.09x faster |
-| python | 1.77 ms | 1.39 ms | 1.27x faster | 5666.0 | 19276.0 | 3.40x faster |
-| nodejs | 0.81 ms | 0.84 ms | 1.04x slower | 11216.3 | 20964.2 | 1.87x faster |
-| golang | 0.49 ms | 0.56 ms | 1.14x slower | 25712.4 | 23656.5 | 1.09x slower |
+| symfony | 5.83 ms | 2.56 ms | 2.28x faster | 846.3 | 10523.6 | 12.44x faster |
+| laravel | 14.89 ms | 9.84 ms | 1.51x faster | 511.0 | 4199.0 | 8.22x faster |
+| python | 1.93 ms | 1.64 ms | 1.17x faster | 2305.3 | 11237.0 | 4.87x faster |
+| nodejs | 1.56 ms | 1.67 ms | 1.07x slower | 5880.9 | 16426.9 | 2.79x faster |
+| golang | 1.06 ms | 1.09 ms | 1.02x slower | 8559.4 | 8690.9 | 1.02x faster |
 
 ## Throughput change per endpoint
 
@@ -45,21 +45,19 @@ each endpoint.
 
 | Endpoint | golang | nodejs | laravel | symfony | python |
 | --- | --- | --- | --- | --- | --- |
-| `/_healthcheck` | 1.13x slower | 1.14x faster | 8.03x faster | 7.82x faster | 2.19x faster |
-| `/rides` | 1.07x slower | 1.63x faster | 4.64x faster | 7.02x faster | 4.32x faster |
-| `/rides/summary` | 1.01x faster | 2.36x faster | 8.06x faster | 13.26x faster | 5.21x faster |
-| `/rides/cost` | 1.03x slower | 2.90x faster | 5.01x faster | 12.79x faster | 5.27x faster |
-| `/stations` | 1.02x faster | 3.27x faster | 4.52x faster | 8.46x faster | 5.42x faster |
+| `/rides` | 1.03x faster | 2.84x faster | 5.12x faster | 7.16x faster | 3.95x faster |
+| `/rides/summary` | 1.02x faster | 3.01x faster | 10.80x faster | 14.46x faster | 4.96x faster |
+| `/rides/cost` | 1.01x faster | 2.05x faster | 5.77x faster | 14.67x faster | 5.23x faster |
+| `/stations` | 1.01x faster | 3.29x faster | 6.21x faster | 8.52x faster | 4.61x faster |
 
 ## Median latency side by side
 
 | Endpoint | golang dev | golang prod | nodejs dev | nodejs prod | laravel dev | laravel prod | symfony dev | symfony prod | python dev | python prod |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `/_healthcheck` | 0.22 ms | 0.28 ms | 0.35 ms | 0.35 ms | 2.67 ms | 1.28 ms | 1.45 ms | 0.62 ms | 0.63 ms | 0.61 ms |
-| `/rides` | 2.86 ms | 3.27 ms | 3.85 ms | 4.42 ms | 20.72 ms | 16.12 ms | 11.09 ms | 5.78 ms | 6.78 ms | 5.87 ms |
-| `/rides/summary` | 0.49 ms | 0.56 ms | 0.41 ms | 0.43 ms | 3.96 ms | 1.78 ms | 3.61 ms | 0.97 ms | 2.01 ms | 1.70 ms |
-| `/rides/cost` | 0.43 ms | 0.46 ms | 0.81 ms | 0.84 ms | 14.26 ms | 10.69 ms | 3.79 ms | 1.12 ms | 1.54 ms | 1.14 ms |
-| `/stations` | 1.08 ms | 1.11 ms | 1.61 ms | 1.68 ms | 6.56 ms | 4.44 ms | 6.06 ms | 2.52 ms | 1.77 ms | 1.39 ms |
+| `/rides` | 3.00 ms | 2.95 ms | 3.98 ms | 3.88 ms | 20.46 ms | 15.20 ms | 12.04 ms | 5.52 ms | 6.46 ms | 5.74 ms |
+| `/rides/summary` | 0.53 ms | 0.53 ms | 0.40 ms | 0.41 ms | 4.07 ms | 1.60 ms | 3.58 ms | 0.98 ms | 1.93 ms | 1.64 ms |
+| `/rides/cost` | 0.46 ms | 0.43 ms | 0.79 ms | 0.77 ms | 14.89 ms | 9.84 ms | 3.79 ms | 1.14 ms | 1.42 ms | 1.07 ms |
+| `/stations` | 1.06 ms | 1.09 ms | 1.56 ms | 1.67 ms | 6.83 ms | 4.01 ms | 5.83 ms | 2.56 ms | 1.63 ms | 1.41 ms |
 
 ## Reading the gap
 
