@@ -1,2 +1,3 @@
 # Compiled harness binary; build it with `go build -o speedtest .`
 /speedtest
+/velo-stats-speedtest
